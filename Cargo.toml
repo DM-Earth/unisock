@@ -1,0 +1,41 @@
+[package]
+name = "unisock"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+futures-lite = "2.3"
+
+[lints]
+workspace = true
+
+[workspace]
+members = ["impl/*"]
+
+[workspace.lints.rust]
+missing-docs = "warn"
+missing-debug-implementations = "warn"
+let-underscore-drop = "warn"
+single-use-lifetimes = "warn"
+trivial-numeric-casts = "warn"
+elided-lifetimes-in-paths = "deny"
+unused-lifetimes = "forbid"
+unused-macro-rules = "warn"
+unused-qualifications = "warn"
+variant-size-differences = "warn"
+dyn-drop = "forbid"
+ellipsis-inclusive-range-patterns = "forbid"
+exported-private-dependencies = "forbid"
+uncommon-codepoints = "deny"
+
+[workspace.lints.clippy]
+cloned-instead-of-copied = "warn"
+future-not-send = "warn"
+if-not-else = "warn"
+if-then-some-else-none = "warn"
+impl-trait-in-params = "warn"
+macro-use-imports = "forbid"
+str-to-string = "warn"
+use-debug = "warn"
+iter-without-into-iter = "warn"
+decimal-literal-representation = "warn"

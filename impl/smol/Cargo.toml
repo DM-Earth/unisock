@@ -1,0 +1,15 @@
+[package]
+name = "unisock-smol"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-io = "2.3"
+futures-lite = "2.3"
+socket2 = { version = "0.5", features = ["all"] }
+unisock = { version = "0.1", path = "../../" }
+
+[lints]
+workspace = true
+
+[features]
