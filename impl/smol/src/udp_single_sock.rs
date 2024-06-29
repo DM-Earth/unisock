@@ -1,6 +1,9 @@
 //! UDP backend using a single socket.
 
-use std::net::{SocketAddr, UdpSocket};
+use std::{
+    future::Future,
+    net::{SocketAddr, UdpSocket},
+};
 
 use async_io::Async;
 
@@ -41,14 +44,19 @@ impl unisock::AsyncBackend for Udp {
         Ok(self)
     }
 
-    fn connect(&self, addr: SocketAddr) -> Result<Self::Connection<'_>, Self::Error> {
-        if self.occupied.insert(addr).is_err() {
-            return Err(std::io::ErrorKind::AddrInUse.into());
-        }
-        Ok(Connection {
-            back: self,
-            peer: addr,
-        })
+    fn connect(
+        &self,
+        addr: SocketAddr,
+    ) -> impl Future<Output = Result<Self::Connection<'_>, Self::Error>> {
+        std::future::ready((|| {
+            if self.occupied.insert(addr).is_err() {
+                return Err(std::io::ErrorKind::AddrInUse.into());
+            }
+            Ok(Connection {
+                back: self,
+                peer: addr,
+            })
+        })())
     }
 }
 
@@ -70,7 +78,8 @@ impl unisock::AsyncListener for &Udp {
         }
     }
 
-    fn close(self) -> impl futures_lite::Future<Output = Result<(), Self::Error>> {
+    #[inline]
+    fn close(self) -> impl Future<Output = Result<(), Self::Error>> {
         std::future::ready(Ok(()))
     }
 }
@@ -101,12 +110,12 @@ impl unisock::AsyncConnection for Connection<'_> {
     fn write<'fut>(
         &'fut mut self,
         buf: &'fut [u8],
-    ) -> impl futures_lite::Future<Output = Result<usize, Self::Error>> + 'fut {
+    ) -> impl Future<Output = Result<usize, Self::Error>> + 'fut {
         self.back.sock.send_to(buf, self.peer)
     }
 
     #[inline]
-    fn close(self) -> impl futures_lite::Future<Output = Result<(), Self::Error>> {
+    fn close(self) -> impl Future<Output = Result<(), Self::Error>> {
         std::future::ready(Ok(()))
     }
 }

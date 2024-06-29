@@ -30,7 +30,10 @@ pub trait AsyncBackend {
     fn listen(&self) -> Result<Self::Listener<'_>, Self::Error>;
 
     /// Connects to a remote address and returns the connection.
-    fn connect(&self, addr: SocketAddr) -> Result<Self::Connection<'_>, Self::Error>;
+    fn connect(
+        &self,
+        addr: SocketAddr,
+    ) -> impl Future<Output = Result<Self::Connection<'_>, Self::Error>> + '_;
 }
 
 /// Asynchronous listener that accepts incoming connections.

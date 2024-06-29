@@ -1,6 +1,9 @@
 //! Asynchronous TCP socket backend.
 
-use std::net::{SocketAddr, TcpListener, TcpStream};
+use std::{
+    future::Future,
+    net::{SocketAddr, TcpListener, TcpStream},
+};
 
 use async_io::Async;
 use futures_lite::{AsyncReadExt as _, AsyncWriteExt as _};
@@ -37,19 +40,24 @@ impl unisock::AsyncBackend for Tcp {
         Ok(Listener(Async::new(listener)?))
     }
 
-    fn connect(&self, addr: SocketAddr) -> Result<Self::Connection<'_>, Self::Error> {
-        let sock = Socket::new(
-            match self.local {
-                SocketAddr::V4(_) => socket2::Domain::IPV4,
-                SocketAddr::V6(_) => socket2::Domain::IPV6,
-            },
-            socket2::Type::STREAM,
-            None,
-        )?;
-        sock.bind(&self.local.into())?;
-        sock.connect(&addr.into())?;
-        let stream: TcpStream = sock.into();
-        Ok(Connection(Async::new(stream)?))
+    fn connect(
+        &self,
+        addr: SocketAddr,
+    ) -> impl Future<Output = Result<Self::Connection<'_>, Self::Error>> + '_ {
+        std::future::ready((|| {
+            let sock = Socket::new(
+                match self.local {
+                    SocketAddr::V4(_) => socket2::Domain::IPV4,
+                    SocketAddr::V6(_) => socket2::Domain::IPV6,
+                },
+                socket2::Type::STREAM,
+                None,
+            )?;
+            sock.bind(&self.local.into())?;
+            sock.connect(&addr.into())?;
+            let stream: TcpStream = sock.into();
+            Ok(Connection(Async::new(stream)?))
+        })())
     }
 }
 
@@ -71,7 +79,7 @@ impl unisock::AsyncListener for Listener {
     }
 
     #[inline]
-    fn close(self) -> impl futures_lite::Future<Output = Result<(), Self::Error>> {
+    fn close(self) -> impl Future<Output = Result<(), Self::Error>> {
         std::future::ready(Ok(()))
     }
 }
@@ -87,17 +95,19 @@ impl unisock::AsyncConnection for Connection {
     fn read<'fut>(
         &'fut mut self,
         buf: &'fut mut [u8],
-    ) -> impl futures_lite::Future<Output = Result<usize, Self::Error>> {
+    ) -> impl Future<Output = Result<usize, Self::Error>> {
         self.0.read(buf)
     }
 
     #[inline]
     async fn write<'fut>(&'fut mut self, buf: &'fut [u8]) -> Result<usize, Self::Error> {
-        self.0.write(buf).await
+        let res = self.0.write(buf).await?;
+        self.0.flush().await?;
+        Ok(res)
     }
 
     #[inline]
-    fn close(self) -> impl futures_lite::Future<Output = Result<(), Self::Error>> {
+    fn close(self) -> impl Future<Output = Result<(), Self::Error>> {
         std::future::ready(Ok(()))
     }
 }
