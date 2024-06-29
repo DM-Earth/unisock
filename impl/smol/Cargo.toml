@@ -8,6 +8,8 @@ async-io = "2.3"
 futures-lite = "2.3"
 socket2 = { version = "0.5", features = ["all"] }
 unisock = { version = "0.1", path = "../../" }
+scc = "2.1"
+ahash = "0.8"
 
 [lints]
 workspace = true
