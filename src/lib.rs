@@ -73,6 +73,9 @@ pub trait AsyncConnection {
         buf: &'fut [u8],
     ) -> impl Future<Output = Result<usize, Self::Error>> + 'fut;
 
+    /// Polls the I/O handle for readability.
+    fn poll_readable(&self, cx: &mut core::task::Context<'_>) -> bool;
+
     /// Closes the connection.
     fn close(self) -> impl Future<Output = Result<(), Self::Error>>;
 }

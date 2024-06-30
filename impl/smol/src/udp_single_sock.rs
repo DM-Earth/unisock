@@ -118,6 +118,21 @@ impl unisock::AsyncConnection for Connection<'_> {
     fn close(self) -> impl Future<Output = Result<(), Self::Error>> {
         std::future::ready(Ok(()))
     }
+
+    fn poll_readable(&self, cx: &mut core::task::Context<'_>) -> bool {
+        if matches!(
+            self.back.sock.poll_readable(cx),
+            std::task::Poll::Ready(Ok(_))
+        ) {
+            self.back
+                .sock
+                .get_ref()
+                .peek_from(&mut [])
+                .is_ok_and(|(_, addr)| addr == self.peer)
+        } else {
+            false
+        }
+    }
 }
 
 impl Drop for Connection<'_> {

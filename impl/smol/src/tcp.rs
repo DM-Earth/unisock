@@ -110,4 +110,9 @@ impl unisock::AsyncConnection for Connection {
     fn close(self) -> impl Future<Output = Result<(), Self::Error>> {
         std::future::ready(Ok(()))
     }
+
+    #[inline]
+    fn poll_readable(&self, cx: &mut core::task::Context<'_>) -> bool {
+        matches!(self.0.poll_readable(cx), std::task::Poll::Ready(Ok(_)))
+    }
 }

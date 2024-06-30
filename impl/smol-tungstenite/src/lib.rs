@@ -116,4 +116,11 @@ impl unisock::AsyncConnection for Connection {
         let mut pinned = Box::pin(self.0);
         futures_lite::future::poll_fn(move |cx| pinned.as_mut().poll_close(cx))
     }
+
+    fn poll_readable(&self, cx: &mut core::task::Context<'_>) -> bool {
+        matches!(
+            self.0.get_ref().poll_readable(cx),
+            std::task::Poll::Ready(Ok(_))
+        )
+    }
 }
