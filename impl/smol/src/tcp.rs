@@ -115,4 +115,9 @@ impl unisock::AsyncConnection for Connection {
     fn poll_readable(&self, cx: &mut core::task::Context<'_>) -> bool {
         matches!(self.0.poll_readable(cx), std::task::Poll::Ready(Ok(_)))
     }
+
+    #[inline]
+    fn poll_writable(&self, cx: &mut core::task::Context<'_>) -> bool {
+        matches!(self.0.poll_writable(cx), std::task::Poll::Ready(Ok(_)))
+    }
 }

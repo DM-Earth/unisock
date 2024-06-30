@@ -133,6 +133,13 @@ impl unisock::AsyncConnection for Connection<'_> {
             false
         }
     }
+
+    fn poll_writable(&self, cx: &mut core::task::Context<'_>) -> bool {
+        matches!(
+            self.back.sock.poll_writable(cx),
+            std::task::Poll::Ready(Ok(_))
+        )
+    }
 }
 
 impl Drop for Connection<'_> {
