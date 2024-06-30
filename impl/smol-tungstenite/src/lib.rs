@@ -8,13 +8,12 @@ use std::{
 };
 
 use async_io::Async;
-use async_tungstenite::{
-    tungstenite::{Error as WsError, Message},
-    WebSocketStream,
-};
+use async_tungstenite::{tungstenite::Message, WebSocketStream};
 use futures_lite::StreamExt;
 use futures_sink::Sink as _;
 use socket2::Socket;
+
+pub use async_tungstenite::tungstenite::Error as WsError;
 
 /// Asynchronous TCP socket backend.
 #[derive(Debug)]
