@@ -9,7 +9,7 @@ use core::{future::Future, net::SocketAddr};
 /// Asynchronous socket backend that provides
 pub trait AsyncBackend {
     /// The error type that is returned by the backend.
-    type Error: core::error::Error;
+    type Error;
 
     /// The listener type that is used to accept incoming connections.
     type Listener<'a>: AsyncListener<Connection<'a> = Self::Connection<'a>, Error = Self::Error>
@@ -39,7 +39,7 @@ pub trait AsyncBackend {
 /// Asynchronous listener that accepts incoming connections.
 pub trait AsyncListener {
     /// The error type that is returned by the listener.
-    type Error: core::error::Error;
+    type Error;
 
     /// The connection type that is accepted by the listener.
     type Connection<'a>: AsyncConnection<Error = Self::Error>
@@ -59,7 +59,7 @@ pub trait AsyncListener {
 /// Asynchronous connection that provides the basic API for sending and receiving data.
 pub trait AsyncConnection {
     /// The error type that is returned by the connection.
-    type Error: core::error::Error;
+    type Error;
 
     /// Receives a single datagram message on the socket. On success, returns the number of bytes read.
     fn read<'fut>(
