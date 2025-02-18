@@ -8,7 +8,10 @@ use std::{
 };
 
 use async_io::Async;
-use async_tungstenite::{tungstenite::Message, WebSocketStream};
+use async_tungstenite::{
+    tungstenite::{Bytes, Message},
+    WebSocketStream,
+};
 use futures_lite::StreamExt;
 use futures_sink::Sink as _;
 use socket2::Socket;
@@ -24,11 +27,13 @@ pub struct WebSocket {
 impl unisock::AsyncBackend for WebSocket {
     type Error = WsError;
 
-    type Listener<'a> = Listener
+    type Listener<'a>
+        = Listener
     where
         Self: 'a;
 
-    type Connection<'a> = Connection
+    type Connection<'a>
+        = Connection
     where
         Self: 'a;
 
@@ -70,7 +75,8 @@ pub struct Listener(Async<TcpListener>);
 impl unisock::AsyncListener for Listener {
     type Error = WsError;
 
-    type Connection<'a> = Connection
+    type Connection<'a>
+        = Connection
     where
         Self: 'a;
 
@@ -104,9 +110,10 @@ impl unisock::AsyncConnection for Connection {
     }
 
     async fn write<'fut>(&'fut mut self, buf: &'fut [u8]) -> Result<usize, Self::Error> {
+        let bytes = Bytes::copy_from_slice(buf);
         let mut pinned = Pin::new(&mut self.0);
         futures_lite::future::poll_fn(|cx| pinned.as_mut().poll_ready(cx)).await?;
-        let msg = Message::binary(buf);
+        let msg = Message::binary(bytes);
         pinned.as_mut().start_send(msg)?;
         futures_lite::future::poll_fn(|cx| pinned.as_mut().poll_flush(cx)).await?;
         Ok(buf.len())

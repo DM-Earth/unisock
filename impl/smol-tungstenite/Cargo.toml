@@ -1,14 +1,20 @@
 [package]
 name = "unisock-smol-tungstenite"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
+authors = ["Jiening Yu <jiening.yu@outlook.com>"]
+description = "async-tungstenite WebSocket backend for unisock"
+repository = "https://codeberg.org/DM-Earth/unisock"
+license = "AGPL-3.0-or-later"
+keywords = ["smol", "socket", "unisock"]
+categories = ["network-programming", "asynchronous"]
 
 [dependencies]
 async-io = "2.3"
 futures-lite = "2.3"
 socket2 = { version = "0.5", features = ["all"] }
-unisock = { version = "0.1", path = "../../" }
-async-tungstenite = "0.26"
+unisock = { version = "1.0", path = "../../" }
+async-tungstenite = "0.29.0"
 futures-sink = "0.3"
 
 [lints]

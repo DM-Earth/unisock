@@ -6,7 +6,7 @@
 
 use core::{future::Future, net::SocketAddr};
 
-/// Asynchronous socket backend that provides
+/// Asynchronous socket backend that provides fundamental components of a connection type.
 pub trait AsyncBackend {
     /// The error type that is returned by the backend.
     type Error;

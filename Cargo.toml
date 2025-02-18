@@ -1,7 +1,13 @@
 [package]
 name = "unisock"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
+authors = ["Jiening Yu <jiening.yu@outlook.com>"]
+description = "Unified socket with different implementations"
+repository = "https://codeberg.org/DM-Earth/unisock"
+license = "AGPL-3.0-or-later"
+keywords = ["socket", "unisock"]
+categories = ["network-programming", "asynchronous"]
 
 [dependencies]
 
