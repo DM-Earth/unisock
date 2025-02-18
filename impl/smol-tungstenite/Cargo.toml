@@ -13,7 +13,7 @@ categories = ["network-programming", "asynchronous"]
 async-io = "2.3"
 futures-lite = "2.3"
 socket2 = { version = "0.5", features = ["all"] }
-unisock = { version = "1.0", path = "../../" }
+unisock = "1.0"
 async-tungstenite = "0.29.0"
 futures-sink = "0.3"
 
