@@ -52,12 +52,8 @@ impl unisock::AsyncBackend for WebSocket {
     }
 
     async fn connect(&self, addr: SocketAddr) -> Result<Self::Connection<'_>, Self::Error> {
-        let (stream, response) = connect_async(format!("ws://{}", addr)).await?;
-        if response.status().is_success() {
-            Ok(Connection(stream))
-        } else {
-            Err(WsError::Http(Box::new(response)))
-        }
+        let (stream, _) = connect_async(format!("ws://{}", addr)).await?;
+        Ok(Connection(stream))
     }
 }
 
