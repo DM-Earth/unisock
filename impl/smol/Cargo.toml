@@ -10,10 +10,10 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+unisock = { version = "1.0", path = "../../" }
 async-io = "2.3"
 futures-lite = "2.3"
 socket2 = { version = "0.6.3", features = ["all"] }
-unisock = "1.0"
 scc = "3.6.12"
 ahash = "0.8"
 
