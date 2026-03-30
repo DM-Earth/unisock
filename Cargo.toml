@@ -1,13 +1,13 @@
 [package]
 name = "unisock"
 version = "1.0.0"
-edition = "2021"
-authors = ["Jiening Yu <jiening.yu@outlook.com>"]
 description = "Unified socket with different implementations"
-repository = "https://codeberg.org/DM-Earth/unisock"
-license = "AGPL-3.0-or-later"
 keywords = ["socket", "unisock"]
 categories = ["network-programming", "asynchronous"]
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
 
 [dependencies]
 
@@ -16,6 +16,12 @@ workspace = true
 
 [workspace]
 members = ["impl/*"]
+
+[workspace.package]
+authors = ["Jiening Yu <jiening.yu@outlook.com>"]
+edition = "2021"
+license = "AGPL-3.0-or-later"
+repository = "https://codeberg.org/DM-Earth/unisock"
 
 [workspace.lints.rust]
 missing-docs = "warn"

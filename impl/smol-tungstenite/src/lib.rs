@@ -2,21 +2,21 @@
 
 use std::{
     future::Future,
-    io::Write,
-    net::{SocketAddr, TcpListener, TcpStream},
-    pin::Pin,
+    io::Write as _,
+    net::{SocketAddr, TcpListener},
 };
 
 use async_io::Async;
+use async_net::TcpStream;
 use async_tungstenite::{
+    smol::connect_async,
     tungstenite::{Bytes, Message},
     WebSocketStream,
 };
 use futures_lite::StreamExt;
-use futures_sink::Sink as _;
-use socket2::Socket;
 
 pub use async_tungstenite::tungstenite::Error as WsError;
+use futures_util::stream::FusedStream;
 
 /// Asynchronous TCP socket backend.
 #[derive(Debug)]
@@ -37,7 +37,6 @@ impl unisock::AsyncBackend for WebSocket {
     where
         Self: 'a;
 
-    #[inline]
     fn bind(addr: SocketAddr) -> Result<Self, Self::Error>
     where
         Self: Sized,
@@ -45,25 +44,13 @@ impl unisock::AsyncBackend for WebSocket {
         Ok(Self { local: addr })
     }
 
-    #[inline]
     fn listen(&self) -> Result<Self::Listener<'_>, Self::Error> {
         let listener = TcpListener::bind(self.local)?;
         Ok(Listener(Async::new(listener)?))
     }
 
     async fn connect(&self, addr: SocketAddr) -> Result<Self::Connection<'_>, Self::Error> {
-        let sock = Socket::new(
-            match self.local {
-                SocketAddr::V4(_) => socket2::Domain::IPV4,
-                SocketAddr::V6(_) => socket2::Domain::IPV6,
-            },
-            socket2::Type::STREAM,
-            None,
-        )?;
-        sock.bind(&self.local.into())?;
-        sock.connect(&addr.into())?;
-        let stream: TcpStream = sock.into();
-        let stream = async_tungstenite::accept_async(Async::new(stream)?).await?;
+        let (stream, _) = connect_async(format!("ws://{}", addr)).await?;
         Ok(Connection(stream))
     }
 }
@@ -82,11 +69,10 @@ impl unisock::AsyncListener for Listener {
 
     async fn accept(&self) -> Result<(Self::Connection<'_>, SocketAddr), Self::Error> {
         let (stream, addr) = self.0.accept().await?;
-        let stream = async_tungstenite::accept_async(stream).await?;
+        let stream = async_tungstenite::accept_async(stream.into()).await?;
         Ok((Connection(stream), addr))
     }
 
-    #[inline]
     fn close(self) -> impl Future<Output = Result<(), Self::Error>> {
         std::future::ready(Ok(()))
     }
@@ -94,7 +80,7 @@ impl unisock::AsyncListener for Listener {
 
 /// Asynchronous WebSocket connection.
 #[derive(Debug)]
-pub struct Connection(WebSocketStream<Async<TcpStream>>);
+pub struct Connection(WebSocketStream<TcpStream>);
 
 impl unisock::AsyncConnection for Connection {
     type Error = WsError;
@@ -102,39 +88,30 @@ impl unisock::AsyncConnection for Connection {
     async fn read<'fut>(&'fut mut self, mut buf: &'fut mut [u8]) -> Result<usize, Self::Error> {
         let msg = self
             .0
-            .try_next()
-            .await?
-            .ok_or(WsError::AlreadyClosed)?
-            .into_data();
-        buf.write(&msg).map_err(WsError::Io)
+            .next()
+            .await
+            .ok_or(WsError::AlreadyClosed)
+            .flatten()?;
+        buf.write(&msg.into_data()).map_err(WsError::Io)
     }
 
     async fn write<'fut>(&'fut mut self, buf: &'fut [u8]) -> Result<usize, Self::Error> {
         let bytes = Bytes::copy_from_slice(buf);
-        let mut pinned = Pin::new(&mut self.0);
-        futures_lite::future::poll_fn(|cx| pinned.as_mut().poll_ready(cx)).await?;
-        let msg = Message::binary(bytes);
-        pinned.as_mut().start_send(msg)?;
-        futures_lite::future::poll_fn(|cx| pinned.as_mut().poll_flush(cx)).await?;
+        self.0.send(Message::Binary(bytes)).await?;
         Ok(buf.len())
     }
 
-    fn close(self) -> impl Future<Output = Result<(), Self::Error>> {
-        let mut pinned = Box::pin(self.0);
-        futures_lite::future::poll_fn(move |cx| pinned.as_mut().poll_close(cx))
+    async fn close(mut self) -> Result<(), Self::Error> {
+        self.0.close(None).await
     }
 
-    fn poll_readable(&self, cx: &mut core::task::Context<'_>) -> bool {
-        matches!(
-            self.0.get_ref().poll_readable(cx),
-            std::task::Poll::Ready(Ok(_))
-        )
+    #[inline]
+    fn poll_readable(&self, _cx: &mut core::task::Context<'_>) -> bool {
+        !self.0.is_terminated()
     }
 
-    fn poll_writable(&self, cx: &mut core::task::Context<'_>) -> bool {
-        matches!(
-            self.0.get_ref().poll_writable(cx),
-            std::task::Poll::Ready(Ok(_))
-        )
+    #[inline]
+    fn poll_writable(&self, _cx: &mut core::task::Context<'_>) -> bool {
+        !self.0.is_terminated()
     }
 }
