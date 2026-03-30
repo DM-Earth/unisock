@@ -1,20 +1,20 @@
 [package]
 name = "unisock-smol"
 version = "0.1.0"
-edition = "2021"
-authors = ["Jiening Yu <jiening.yu@outlook.com>"]
 description = "async-io TCP & UDP backend for unisock"
-repository = "https://codeberg.org/DM-Earth/unisock"
-license = "AGPL-3.0-or-later"
 keywords = ["smol", "socket", "unisock"]
 categories = ["network-programming", "asynchronous"]
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
 
 [dependencies]
 async-io = "2.3"
 futures-lite = "2.3"
-socket2 = { version = "0.5", features = ["all"] }
+socket2 = { version = "0.6.3", features = ["all"] }
 unisock = "1.0"
-scc = "2.1"
+scc = "3.6.12"
 ahash = "0.8"
 
 [lints]
