@@ -37,7 +37,6 @@ impl unisock::AsyncBackend for WebSocket {
     where
         Self: 'a;
 
-    #[inline]
     fn bind(addr: SocketAddr) -> Result<Self, Self::Error>
     where
         Self: Sized,
@@ -45,7 +44,6 @@ impl unisock::AsyncBackend for WebSocket {
         Ok(Self { local: addr })
     }
 
-    #[inline]
     fn listen(&self) -> Result<Self::Listener<'_>, Self::Error> {
         let listener = TcpListener::bind(self.local)?;
         Ok(Listener(Async::new(listener)?))
@@ -75,7 +73,6 @@ impl unisock::AsyncListener for Listener {
         Ok((Connection(stream), addr))
     }
 
-    #[inline]
     fn close(self) -> impl Future<Output = Result<(), Self::Error>> {
         std::future::ready(Ok(()))
     }
