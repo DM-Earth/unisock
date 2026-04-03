@@ -1,6 +1,6 @@
 [package]
 name = "unisock-smol-tungstenite"
-version = "0.1.0"
+version = "0.1.1"
 description = "async-tungstenite WebSocket backend for unisock"
 keywords = ["smol", "socket", "unisock"]
 categories = ["network-programming", "asynchronous"]

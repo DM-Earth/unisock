@@ -1,6 +1,6 @@
 [package]
 name = "unisock-smol"
-version = "0.1.1"
+version = "0.1.2"
 description = "async-io TCP & UDP backend for unisock"
 keywords = ["smol", "socket", "unisock"]
 categories = ["network-programming", "asynchronous"]
