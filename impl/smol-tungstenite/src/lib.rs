@@ -1,6 +1,7 @@
 //! Asynchronous WebSocket backend through `async-io` and `async-tungstenite`.
 
 use std::{
+    convert::identity,
     future::Future,
     io::Write as _,
     net::{SocketAddr, TcpListener},
@@ -93,8 +94,8 @@ impl unisock::AsyncConnection for Connection {
             .0
             .next()
             .await
-            .transpose()
-            .and_then(|inner| inner.ok_or(WsError::AlreadyClosed))?;
+            .ok_or(WsError::AlreadyClosed)
+            .and_then(identity)?;
 
         buf.write(&msg.into_data()).map_err(WsError::Io)
     }
