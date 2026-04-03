@@ -8,13 +8,14 @@ authors.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
+rust-version.workspace = true
 
 [dependencies]
 unisock = { version = "1.0", path = "../../" }
 async-io = "2.3"
 futures-lite = "2.3"
 socket2 = { version = "0.6.3", features = ["all"] }
-scc = "3.6.12"
+scc = "2.4"
 ahash = "0.8"
 
 [lints]

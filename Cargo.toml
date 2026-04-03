@@ -8,6 +8,7 @@ authors.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
+rust-version.workspace = true
 
 [dependencies]
 
@@ -22,6 +23,7 @@ authors = ["Jiening Yu <jiening.yu@outlook.com>"]
 edition = "2021"
 license = "AGPL-3.0-or-later"
 repository = "https://codeberg.org/DM-Earth/unisock"
+rust-version = "1.78.0"
 
 [workspace.lints.rust]
 missing-docs = "warn"
