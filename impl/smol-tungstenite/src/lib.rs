@@ -9,7 +9,6 @@ use std::{
 use async_io::Async;
 use async_net::TcpStream;
 use async_tungstenite::{
-    smol::connect_async,
     tungstenite::{Bytes, Message},
     WebSocketStream,
 };
@@ -17,6 +16,10 @@ use futures_lite::StreamExt;
 
 pub use async_tungstenite::tungstenite::Error as WsError;
 use futures_util::stream::FusedStream;
+
+use crate::smol_tungstenite::connect_async;
+
+mod smol_tungstenite;
 
 /// Asynchronous TCP socket backend.
 #[derive(Debug)]
@@ -90,8 +93,9 @@ impl unisock::AsyncConnection for Connection {
             .0
             .next()
             .await
-            .ok_or(WsError::AlreadyClosed)
-            .flatten()?;
+            .transpose()
+            .and_then(|inner| inner.ok_or(WsError::AlreadyClosed))?;
+
         buf.write(&msg.into_data()).map_err(WsError::Io)
     }
 

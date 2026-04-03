@@ -51,7 +51,7 @@ impl unisock::AsyncBackend for Udp {
         addr: SocketAddr,
     ) -> impl Future<Output = Result<Self::Connection<'_>, Self::Error>> {
         std::future::ready((|| {
-            if self.occupied.insert_sync(addr).is_err() {
+            if self.occupied.insert(addr).is_err() {
                 return Err(std::io::ErrorKind::AddrInUse.into());
             }
             Ok(Connection {
@@ -75,7 +75,7 @@ impl unisock::AsyncListener for &Udp {
             let Ok((_, peer)) = self.sock.peek_from(&mut []).await else {
                 continue;
             };
-            if self.occupied.insert_sync(peer).is_ok() {
+            if self.occupied.insert(peer).is_ok() {
                 return Ok((Connection { back: self, peer }, peer));
             }
         }
@@ -148,6 +148,6 @@ impl unisock::AsyncConnection for Connection<'_> {
 impl Drop for Connection<'_> {
     #[inline]
     fn drop(&mut self) {
-        self.back.occupied.remove_sync(&self.peer);
+        self.back.occupied.remove(&self.peer);
     }
 }
